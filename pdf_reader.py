@@ -2,13 +2,16 @@ from fastapi import FastAPI, HTTPException, UploadFile, File
 from pypdf import  PdfReader
 import io
 import re
+from typing import List
+import json
+import os
 
 app = FastAPI()
 
 def metin_temizle(ham_metin: str) -> str:
 
     # Satır sonlarını tek boşluk ile değiştirdik.
-    metin = ham_metin.replace("/n", " ")
+    metin = ham_metin.replace("\n", " ")
 
     # Birden fazla boşluğu tek boşluğa çevirdik.
     # \s+ birden fazla boşluk anlamına gelir. (tab, space, newline gibi)
@@ -21,10 +24,39 @@ def metin_temizle(ham_metin: str) -> str:
 
     return metin
 
+def metni_parcala(metin: str, chunk_size:int = 800, overlap: int= 100) -> List[str]:
+
+    chunks = []
+    start = 0
+
+
+    # Metin bitene kadar loop
+    while start < len(metin):
+        
+        # Chunk'ın sonunu belirledik.
+        end = start + chunk_size
+
+        if end < len(metin):
+            son_bosluk = metin.rfind(" ", start, end)
+
+            if son_bosluk != -1:
+                end = son_bosluk
+
+
+    chunk = metin[start:end].strip()
+    if chunk:
+        chunks.append(chunk)
+
+    start = end - overlap
+
+    if start >= end:
+        start = end
+
+    return chunks
 
 
 @app.post("/extract-text")
-async def extract_text(file: UploadFile = File(...)):
+async def extract_text_2(file: UploadFile = File(...)):
 
     if file.content_type != "application/pdf":
         raise HTTPException(status_code=400, detail="Only PDF file is allowed")
@@ -55,7 +87,6 @@ async def extract_text(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error occured while reading PDF file: {str(e)}")
     
-
 @app.post("extract_and_clean")
 async def extract_and_clean(file: UploadFile = File(...)):
     
@@ -79,4 +110,35 @@ async def extract_and_clean(file: UploadFile = File(...)):
     return {
             "karakter_sayisi": len(final_text),
             "temiz_metin": final_text
+    }
+
+@app.post("process-pdf")
+async def process_pdf(
+    file: UploadFile = File(...),
+    chunk_size: int = 800,
+    overlap: int = 100
+):
+
+    _, final_text = extract_and_clean(file)
+
+    chunks = metni_parcala(final_text, chunk_size, overlap)
+
+    data = {
+        "metadata":{
+            "toplam_parca": len(chunks),
+            "kaynak": file.filename
+        },
+         "chunk": chunks
+
+    }
+
+    with open("chunks.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
+
+    return {
+        "dosya_adi": file.filename,
+        "karakter_sayisi": len(final_text),
+        "chunk_sayisi": len(chunks),
+        "parcalar": chunks
     }
