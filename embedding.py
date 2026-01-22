@@ -20,18 +20,15 @@ def embedding_uret(metin: str) -> list[float]:
 
 
 with open("chunks.json", "r") as file:
-    chunks = json.load(file)["chunk"]
+    data = json.load(file)
 
+    chunks = data.get("chunk")
 
 v_db_taslak = []
 
 for text in chunks:
     print("Vektör üretiliyor:", text[:20])
     vector = embedding_uret(text)
-
-
-    with open("vector.json", "w") as vector_file:
-        json.dump(vector, vector_file)
 
     v_db_taslak.append(
         {
@@ -40,5 +37,7 @@ for text in chunks:
         }
     )
 
-#with open("embedding.json", "w") as file:
-#    json.dump(v_db_taslak, file)
+with open("embedding.json", "w", encoding="utf-8") as file:
+    json.dump(v_db_taslak, file, ensure_ascii=False, indent=4)
+
+    

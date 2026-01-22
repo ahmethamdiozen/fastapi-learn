@@ -3,21 +3,25 @@ import json
 
 client = chromadb.PersistentClient(path="./my_db")
 
-collection = client.get_or_create_collection(name="pdf_chunks")
+collection = client.get_or_create_collection(name="pdf_knowledge")
 
-with open("vector.json", "r") as f:
-    vector_json=json.load(f)
+with open("embedding.json", "r", encoding="utf-8") as file:
+    v_db_draft = json.load(file)
 
-with open("chunks.json", "r") as ch:
-    chunks_json=json.load(ch)
+
+ids = []
+documents = []
+embeddings = []
+
+
+for i, item in enumerate(v_db_draft):
+    ids.append(f"id_{i}")
+    documents.append(item["text"])
+    embeddings.append(item["embedding"])
 
 
 collection.add(
-    embeddings=vector_json,
-    documents=chunks_json,
-    ids=["id1"]
+    ids,
+    documents=documents,
+    embeddings=embeddings
 )
-
-result = collection.query(query_texts=["Girişimcilik nedir?"])
-
-print(result)
