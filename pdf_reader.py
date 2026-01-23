@@ -4,7 +4,6 @@ import io
 import re
 from typing import List
 import json
-import os
 
 app = FastAPI()
 
