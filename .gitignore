@@ -6,3 +6,4 @@ embedding.json
 chunks.json
 vector.json
 my_db
+pdf_index.faiss
