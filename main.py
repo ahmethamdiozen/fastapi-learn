@@ -29,3 +29,4 @@ def urun_ekle(yeni_urun: Urun):
         "mesaj": f"{yeni_urun.isim} başarıyla eklendi",
         "fiyat": toplam_fiyat_kdvli
     }
+

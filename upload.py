@@ -27,7 +27,9 @@ async def dosya_yukle(file: UploadFile = File(...)):
     
     # Sadece PDF kabul et.
     if file.content_type != "application/pdf":
-        raise HTTPException(status_code=400, detail="Sadece PDF kabul edilir.")
+        raise HTTPException(
+            status_code=400, 
+            detail="Sadece PDF kabul edilir.")
 
     try:
     # Yüklenen yer + dosya adı ile path belirle

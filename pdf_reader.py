@@ -23,7 +23,7 @@ def metin_temizle(ham_metin: str) -> str:
 
     return metin
 
-def metni_parcala(metin: str, chunk_size:int = 800, overlap: int= 100) -> List[str]:
+def metni_parcala(metin: str, chunk_size:int = 600, overlap: int= 100) -> List[str]:
 
     chunks = []
     start = 0
@@ -89,7 +89,7 @@ async def extract_text_2(file: UploadFile = File(...)):
 @app.post("extract_and_clean")
 async def extract_and_clean(file: UploadFile = File(...)):
     
-    content = await file.read
+    content = await file.read()
     pdf_stream = io.BytesIO(content)
 
     reader = PdfReader(pdf_stream)
